@@ -35,8 +35,10 @@ public class RunMatsim {
 		
 		Config config ;
 		if ( args.length==0 || args[0]=="" ) {
-			config = ConfigUtils.loadConfig( "scenarios/equil/config.xml" ) ;
+			config = ConfigUtils.loadConfig( "config_horizon_2021_1_car.xml" ) ;
 			config.controler().setLastIteration(1);
+			config.qsim().setFlowCapFactor(0.07);
+			config.qsim().setStorageCapFactor(0.1);
 			config.controler().setOverwriteFileSetting( OverwriteFileSetting.deleteDirectoryIfExists );
 		} else {
 			config = ConfigUtils.loadConfig(args[0]) ;
