@@ -18,18 +18,29 @@
  * *********************************************************************** */
 package org.matsim.run;
 
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.scenario.ScenarioUtils;
 
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
+
 /**
  * @author nagel
  *
  */
 public class RunMatsim {
+
+	private static double populationSample = 0.5;
 
 	public static void main(String[] args) {
 		
@@ -46,10 +57,38 @@ public class RunMatsim {
 		
 		Scenario scenario = ScenarioUtils.loadScenario(config) ;
 
+		boolean scalePopulation = true;
+		if (scalePopulation){
+			List<Id<Person>> personIdList2 = new LinkedList<Id<Person>>();
+
+			Iterator personIterator = scenario.getPopulation().getPersons().values().iterator();
+			while (personIterator.hasNext()) {
+				Person person = (Person) personIterator.next();
+				personIdList2.add(person.getId());
+           /*
+            Id<Person> toAddId = (Id<Person>) randomDrawIterator.next();
+            Person toAddPerson = population.getPersons(Map<Id<Person>, args> );
+            drawedPopulation.addPerson(toRemoveId);
+            */
+			}
+			List<Id<Person>> randomDraw = pickNRandom(personIdList2, personIdList2.size() * (1-populationSample));
+			Iterator randomDrawIterator = randomDraw.iterator();
+			while (randomDrawIterator.hasNext()) {
+				Id<Person> toRemoveId = (Id<Person>) randomDrawIterator.next();
+				log.println("Removing the person " + toRemoveId);
+				scenario.getPopulation().removePerson(toRemoveId);
+			}
+		}
 		Controler controler = new Controler( scenario ) ;
 
 		controler.run();
 
+	}
+
+	public static List<Id<Person>> pickNRandom (List < Id < Person >> lst, double n){
+		List<Id<Person>> copy = new LinkedList<Id<Person>>(lst);
+		Collections.shuffle(copy);
+		return copy.subList(0, (int) n);
 	}
 
 }
