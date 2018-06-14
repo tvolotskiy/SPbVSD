@@ -21,6 +21,8 @@ package org.matsim.run;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.population.Person;
+import org.matsim.contrib.accessibility.AccessibilityConfigGroup;
+import org.matsim.contrib.accessibility.Modes4Accessibility;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
@@ -58,6 +60,21 @@ public class RunMatsim {
 		Scenario scenario = ScenarioUtils.loadScenario(config) ;
 
 		boolean scalePopulation = true;
+		reducePopulation(scenario, scalePopulation);
+		Controler controler = new Controler( scenario ) ;
+
+		boolean calculateAccessibility = true;
+		if (calculateAccessibility){
+			AccessibilityConfigGroup accConfig = ConfigUtils.addOrGetModule(config, AccessibilityConfigGroup.class ) ;
+			accConfig.setComputingAccessibilityForMode(Modes4Accessibility.freespeed, true);
+			accConfig.setComputingAccessibilityForMode(Modes4Accessibility.car, true);
+		}
+		controler.run();
+
+
+	}
+
+	private static void reducePopulation(Scenario scenario, boolean scalePopulation) {
 		if (scalePopulation){
 			List<Id<Person>> personIdList2 = new LinkedList<Id<Person>>();
 
@@ -79,10 +96,6 @@ public class RunMatsim {
 				scenario.getPopulation().removePerson(toRemoveId);
 			}
 		}
-		Controler controler = new Controler( scenario ) ;
-
-		controler.run();
-
 	}
 
 	public static List<Id<Person>> pickNRandom (List < Id < Person >> lst, double n){
